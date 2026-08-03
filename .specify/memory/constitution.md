@@ -1,32 +1,58 @@
+<!--
+Sync Impact Report
+Version change: [CONSTITUTION_VERSION] → [CONSTITUTION_VERSION] (unchanged — deferred, see below)
+Modified principles:
+  - [PRINCIPLE_1_NAME] → I. Test-First (NON-NEGOTIABLE) (filled)
+  - [PRINCIPLE_2_NAME] → II. Verify-Plan-Implement-Verify (NON-NEGOTIABLE) (filled)
+  - [PRINCIPLE_3_NAME] → III. Single-Concern Features (filled)
+  - [PRINCIPLE_4_NAME] → IV. Layered Architecture / Library-First (filled)
+Removed sections:
+  - [PRINCIPLE_5_NAME] / [PRINCIPLE_5_DESCRIPTION] slot (only 4 principles supplied by the user;
+    template had 5 — per skill instructions, respecting the specified count)
+Added sections: none
+Deferred (left as unresolved template placeholders, per explicit instruction to touch nothing
+beyond filling in the four principles):
+  - TODO([PROJECT_NAME]): document title not yet set
+  - TODO([SECTION_2_NAME] / [SECTION_2_CONTENT]): additional-constraints section not yet defined
+  - TODO([SECTION_3_NAME] / [SECTION_3_CONTENT]): workflow/review section not yet defined
+  - TODO([GOVERNANCE_RULES]): amendment/compliance procedure not yet defined
+  - TODO([CONSTITUTION_VERSION] / [RATIFICATION_DATE] / [LAST_AMENDED_DATE]): versioning and
+    ratification metadata not yet set — establish on the next amendment that completes the
+    remaining sections above
+-->
+
 # [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Test-First (NON-NEGOTIABLE)
+TDD is mandatory for every operation: write a failing test that specifies the expected
+behavior first, confirm it fails for the right reason, then write the minimum code to make
+it pass (Red-Green-Refactor). No production code is written without a preceding failing
+test. Every one of the 4 core operations plus the chosen extra operation MUST have direct
+test coverage, including the brief's worked example as a literal acceptance test.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Verify-Plan-Implement-Verify (NON-NEGOTIABLE)
+On any test failure or bug: (1) reproduce it and identify root cause before touching code —
+never guess-fix; (2) state the intended fix in one sentence before implementing it; (3)
+implement the minimal fix; (4) re-run the FULL test suite, not just the failing test, to
+confirm the fix and rule out regressions. A fix is not done until step 4 passes clean.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Single-Concern Features
+Each Spec-Kit feature is scoped to one independently testable, independently shippable unit
+of behavior. Never bundle multiple operations or concerns into a single spec — a feature is
+too large if it can't be fully specified, planned, and verified without touching unrelated
+capabilities. This applies to every phase (library, API, frontend), not just the current
+001-007 breakdown.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
-
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### IV. Layered Architecture / Library-First
+All business logic and validation rules live ONLY in the scoreboard library (Phase 1). The
+API (Phase 2) is a thin transport adapter with no business logic of its own. The frontend
+(Phase 3) is a thin presentation layer that only calls the API — no direct library access,
+no duplicated business logic. Each layer MUST be independently testable: library via unit
+tests, API via integration tests against real HTTP endpoints, frontend via component/e2e
+tests. Specific tech choices (API framework, Angular vs React) are NOT decided here — those
+are decided per-phase in that phase's own plan.md when its /speckit-plan runs.
 
 ## [SECTION_2_NAME]
 <!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
