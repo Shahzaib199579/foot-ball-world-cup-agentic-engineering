@@ -9,9 +9,17 @@ Modified principles:
 Removed sections:
   - [PRINCIPLE_5_NAME] / [PRINCIPLE_5_DESCRIPTION] slot (only 4 principles supplied by the user;
     template had 5 — per skill instructions, respecting the specified count)
-Added sections: none
+Added sections:
+  - V. Runnable Local Verification (CLI Demo) — added in a later amendment, per explicit user
+    instruction to touch nothing else (other 4 principles, other sections, version/date
+    metadata all still deferred exactly as below)
+Amended principles (later amendments, extending rather than replacing):
+  - IV. Layered Architecture / Library-First — extended to require persistence be abstracted
+    behind `IMatchRepository` (business logic never depends on EF Core/SQLite directly; unit
+    tests use a fake/in-memory `IMatchRepository`), per explicit user instruction. Principles
+    I, II, III, and V untouched by this amendment.
 Deferred (left as unresolved template placeholders, per explicit instruction to touch nothing
-beyond filling in the four principles):
+beyond filling in the principles requested):
   - TODO([PROJECT_NAME]): document title not yet set
   - TODO([SECTION_2_NAME] / [SECTION_2_CONTENT]): additional-constraints section not yet defined
   - TODO([SECTION_3_NAME] / [SECTION_3_CONTENT]): workflow/review section not yet defined
@@ -53,6 +61,23 @@ no duplicated business logic. Each layer MUST be independently testable: library
 tests, API via integration tests against real HTTP endpoints, frontend via component/e2e
 tests. Specific tech choices (API framework, Angular vs React) are NOT decided here — those
 are decided per-phase in that phase's own plan.md when its /speckit-plan runs.
+
+Persistence is abstracted behind a repository interface (`IMatchRepository`); `Scoreboard`'s
+business logic depends only on this abstraction, never on the concrete storage technology
+(Entity Framework Core / SQLite) directly. This keeps Principle I (Test-First) practical:
+unit tests exercise business logic against a fake/in-memory `IMatchRepository`.
+
+### V. Runnable Local Verification (CLI Demo)
+Every implemented feature must be exercisable manually, not only through
+automated tests. A thin console demo project (demo/ScoreboardCli) wraps the
+current state of IScoreboard and is updated alongside each feature to
+demonstrate it — e.g. start matches, update scores, finish matches, print
+the live summary, and (once built) the match history. It has zero business
+logic of its own (per Principle IV) — it only calls the library and prints
+results. A feature's implementation is not considered done until this demo
+is updated to cover it, in the same commit as the feature. This is distinct
+from the Phase 2 API and Phase 3 frontend in the roadmap — it is a
+local-only, no-network tool that exists from Phase 1 onward.
 
 ## [SECTION_2_NAME]
 <!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->

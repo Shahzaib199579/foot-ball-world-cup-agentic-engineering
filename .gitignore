@@ -8,5 +8,10 @@ bin/
 obj/
 *.user
 
+# SQLite runtime database (created by demo/ScoreboardCli via Persistence/ScoreboardDbContext)
+scoreboard.db
+scoreboard.db-shm
+scoreboard.db-wal
+
 # OS
 .DS_Store

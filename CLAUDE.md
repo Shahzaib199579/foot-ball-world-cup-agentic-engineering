@@ -59,6 +59,11 @@ Each row is its own Spec-Kit feature (`specs/<NNN-name>/`), built and merged seq
   - Operating on a non-existent or already-finished match throws.
 - **Concurrency**: coarse-grained internal locking for thread-safety, documented as "simple and
   correct, not optimized for throughput."
+- **Persistence**: SQLite via Entity Framework Core, introduced starting at spec 001 (early
+  enough to apply to Scoreboard and every later spec without rework). Business logic depends
+  on `IMatchRepository` (constitution Principle IV), never EF Core directly. This goes beyond
+  the brief's "simple library" framing, same as the .NET-over-Java deviation — document as a
+  deliberate choice in README.md, not silently.
 - **Process**: using GitHub Spec-Kit for the full SDLC pipeline —
   `/speckit-constitution` → `/speckit-specify` → `/speckit-clarify` → `/speckit-plan` →
   `/speckit-tasks` → `/speckit-implement`. These are installed as Claude Code skills under
@@ -108,6 +113,8 @@ own prompt-history section — the brief wants prompt history *embedded in* AI.m
 - [ ] Documents the chosen extra feature (`GetHistory`) and explicit rationale for choosing it
 - [ ] States how to build/test (`dotnet build`, `dotnet test`) and references the test that encodes
       the brief's worked example
+- [ ] States how to run the CLI demo locally (`dotnet run --project demo/ScoreboardCli`) to
+      manually verify each operation
 - [ ] No unexplained TODOs or placeholder text
 
 **AI.md** must satisfy all of:
@@ -128,8 +135,13 @@ own prompt-history section — the brief wants prompt history *embedded in* AI.m
 ├── WorldCupScoreboard.sln
 ├── src/WorldCupScoreboard/            (net9.0 class library: Match, MatchStatus, IScoreboard,
 │                                        Scoreboard, Exceptions/)
+│   └── Persistence/                   (IMatchRepository, EF Core DbContext, SQLite
+│                                        implementation, Migrations/ — constitution Principle IV)
 ├── tests/WorldCupScoreboard.Tests/    (xUnit — one test class per operation + a dedicated test
 │                                        encoding the brief's worked example + history tests)
+├── demo/ScoreboardCli/                (net9.0 console app — thin CLI wrapping IScoreboard, run
+│                                        via `dotnet run --project demo/ScoreboardCli`, updated
+│                                        alongside every feature per constitution Principle V)
 ├── .github/workflows/dotnet.yml       (build+test on push)
 ├── .specify/                          (spec-kit scaffolding)
 └── specs/                              (one numbered folder per Spec-Kit feature, see Roadmap)
@@ -149,6 +161,26 @@ own prompt-history section — the brief wants prompt history *embedded in* AI.m
 - One Spec-Kit feature (see Roadmap) maps to one reviewable commit, or a couple of small ones —
   this is how the brief's "distinct commit for the extra feature" requirement is satisfied
   naturally by spec `005-match-history`, with no special-casing needed.
+- Each feature's commit(s) include updating `demo/ScoreboardCli` to exercise the new
+  operation — a feature isn't done until it can be run and seen working locally, not just
+  passing tests.
 - Review every spec-kit/AI-generated file before accepting it into a commit — don't rubber-stamp
   `/implement` output.
+- Unit tests exercise business logic against a fake/in-memory `IMatchRepository` (constitution
+  Principle IV) — fast, no real database involved.
+
+### Definition of Done
+
+A feature is not done, and should not be committed, until all of these pass in order:
+
+1. `/speckit-converge` reports nothing left to build against the feature's spec/plan/tasks
+   (anything it appends as a new task must be implemented before continuing).
+2. `/speckit-analyze` reports the feature's spec/plan/tasks are internally consistent and
+   compliant with the constitution.
+3. `dotnet build` and `dotnet test` both succeed with zero failures.
+4. The feature can be run and observed manually via `dotnet run --project
+   demo/ScoreboardCli` (constitution Principle V).
+5. Every item in the feature's `tasks.md` is checked off.
+
+Only after all 5 pass does the feature get committed.
 - `dotnet build` and `dotnet test` must be clean before any commit that touches `src/` or `tests/`.
