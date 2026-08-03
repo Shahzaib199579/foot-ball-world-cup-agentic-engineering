@@ -24,6 +24,20 @@ re-read the PDF every session.
    → summary order: Uruguay 6–Italy 6, Spain 10–Brazil 2, Mexico 0–Canada 5, Argentina 3–Australia 1, Germany 2–France 2
    ```
 
+## Roadmap
+
+Each row is its own Spec-Kit feature (`specs/<NNN-name>/`), built and merged sequentially.
+
+| Spec | Phase | Covers |
+| --- | --- | --- |
+| `specs/001-start-match` | Phase 1 (brief) | Start a new match — establishes `Match`, `MatchStatus`, `IScoreboard` skeleton |
+| `specs/002-update-score` | Phase 1 (brief) | Update the score |
+| `specs/003-finish-match` | Phase 1 (brief) | Finish a match |
+| `specs/004-live-summary` | Phase 1 (brief) | Get summary of in-progress matches, ordering rule + the brief's worked example as an acceptance test |
+| `specs/005-match-history` | Phase 1 (brief) | The chosen extra feature (`GetHistory`) — must land in its own distinct commit per the brief |
+| `specs/006-scoreboard-api` | Phase 2 (beyond the brief) | REST API |
+| `specs/007-scoreboard-frontend` | Phase 3 (beyond the brief) | Angular/React client |
+
 ## Confirmed decisions (do not re-litigate these without flagging it to the user first)
 
 - **Stack deviation**: the brief explicitly asks for a Java/Maven package. We are deliberately using
@@ -46,8 +60,10 @@ re-read the PDF every session.
 - **Concurrency**: coarse-grained internal locking for thread-safety, documented as "simple and
   correct, not optimized for throughput."
 - **Process**: using GitHub Spec-Kit for the full SDLC pipeline —
-  `/constitution` → `/specify` → `/clarify` → `/plan` → `/tasks` → `/implement`. Each stage's
-  artifact (`memory/constitution.md`, `specs/*/spec.md`, `plan.md`, `tasks.md`) is committed as its
+  `/speckit-constitution` → `/speckit-specify` → `/speckit-clarify` → `/speckit-plan` →
+  `/speckit-tasks` → `/speckit-implement`. These are installed as Claude Code skills under
+  `.claude/skills/speckit-*`, not native slash commands. Each stage's artifact
+  (`.specify/memory/constitution.md`, `specs/*/spec.md`, `plan.md`, `tasks.md`) is committed as its
   own commit and doubles as part of the documented reasoning trail for `AI.md`.
 - **Chat history**: maintain `chat-history.md` at the repo root as a running log, updated
   continuously (don't defer writing it to the end — you'll forget details). It is gitignored and
@@ -63,8 +79,9 @@ Two layers — don't rely on memory/summarization alone to reconstruct prompt hi
    `~/.claude/projects/<encoded-repo-path>/<session-id>.jsonl`. This survives context compaction —
    it's the raw source of truth if anything needs to be recovered later. No setup required.
 2. **Repo-visible export (manual, at checkpoints)**: run the `/export` slash command at the end of
-   each spec-kit stage (after `/specify`, `/clarify`, `/plan`, `/tasks`, each `/implement` slice) and
-   save the output under `chat-history/<stage-name>.md`.
+   each spec-kit stage (after `/speckit-specify`, `/speckit-clarify`, `/speckit-plan`,
+   `/speckit-tasks`, each `/speckit-implement` slice) and save the output under
+   `chat-history/<stage-name>.md`.
 
 **Important — this stays uncommitted until the end, on purpose.** `chat-history.md` and everything
 under `chat-history/` are gitignored while work is in progress. They are a free-editing scratch
@@ -115,13 +132,23 @@ own prompt-history section — the brief wants prompt history *embedded in* AI.m
 │                                        encoding the brief's worked example + history tests)
 ├── .github/workflows/dotnet.yml       (build+test on push)
 ├── .specify/                          (spec-kit scaffolding)
-└── specs/001-live-football-scoreboard/ (spec.md, plan.md, tasks.md)
+└── specs/                              (one numbered folder per Spec-Kit feature, see Roadmap)
+    ├── 001-start-match/                (spec.md, plan.md, tasks.md)
+    ├── 002-update-score/
+    ├── 003-finish-match/
+    ├── 004-live-summary/
+    ├── 005-match-history/
+    ├── 006-scoreboard-api/
+    └── 007-scoreboard-frontend/
 ```
 
 ## Working conventions
 
 - Conventional commit messages (`feat:`, `docs:`, `chore:`, `ci:`). Small, logical, reviewable
   commits — this repo is meant to read like a real PR to teammates.
+- One Spec-Kit feature (see Roadmap) maps to one reviewable commit, or a couple of small ones —
+  this is how the brief's "distinct commit for the extra feature" requirement is satisfied
+  naturally by spec `005-match-history`, with no special-casing needed.
 - Review every spec-kit/AI-generated file before accepting it into a commit — don't rubber-stamp
   `/implement` output.
 - `dotnet build` and `dotnet test` must be clean before any commit that touches `src/` or `tests/`.
