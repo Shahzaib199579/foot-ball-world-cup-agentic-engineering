@@ -102,4 +102,20 @@ public class Scoreboard : IScoreboard
             return match;
         }
     }
+
+    public Match FinishMatch(int matchId)
+    {
+        lock (_lock)
+        {
+            var match = _repository.GetById(matchId);
+            if (match is null || match.Status != MatchStatus.InProgress)
+            {
+                throw new MatchNotFoundException(matchId);
+            }
+
+            match.Status = MatchStatus.Finished;
+            _repository.Update(match);
+            return match;
+        }
+    }
 }

@@ -44,6 +44,9 @@ while (true)
         case "update":
             HandleUpdate(commandArgs);
             break;
+        case "finish":
+            HandleFinish(commandArgs);
+            break;
         case "ids":
             HandleIds();
             break;
@@ -142,6 +145,25 @@ void HandleUpdate(List<string> args)
     }
 }
 
+void HandleFinish(List<string> args)
+{
+    if (args.Count < 1 || !int.TryParse(args[0], out var matchId))
+    {
+        Console.WriteLine("Usage: finish <matchId>");
+        return;
+    }
+
+    try
+    {
+        var finished = scoreboard.FinishMatch(matchId);
+        PrintMatch(finished, "FINISHED");
+    }
+    catch (MatchNotFoundException ex)
+    {
+        Console.WriteLine($"REJECTED — {ex.Message}");
+    }
+}
+
 void HandleIds()
 {
     if (startedIds.Count == 0)
@@ -203,7 +225,7 @@ List<string> Tokenize(string line)
 void PrintWelcome()
 {
     Console.WriteLine("WorldCupScoreboard demo CLI");
-    Console.WriteLine("Covers: 001-start-match (start, get), 002-update-score (update). Later specs add more commands here.");
+    Console.WriteLine("Covers: 001-start-match (start, get), 002-update-score (update), 003-finish-match (finish). Later specs add more commands here.");
     Console.WriteLine("Type 'help' for commands and manual test scenarios, 'exit' to quit.");
     Console.WriteLine();
 }
@@ -216,6 +238,7 @@ void PrintHelp()
           start <home> <away> <location> [scheduledAt]   Start a new match. scheduledAt: ISO-8601 or 'now' (default).
           get <matchId>                                   Retrieve a match by its Id.
           update <matchId> <homeScore> <awayScore>        Update a match's score (must not decrease).
+          finish <matchId>                                 Mark a match as finished (one-way, terminal).
           ids                                              List match Ids started this session.
           help                                             Show this help.
           exit | quit                                      Quit.
@@ -308,5 +331,35 @@ void PrintHelp()
         update's arguments are parsed as integers by this CLI itself (see HandleUpdate), so a
         non-numeric argument fails Console-side parsing before ever reaching the library, same
         rationale as spec 002-update-score's Assumptions section.
+
+        Manual test scenarios (spec 003-finish-match):
+
+        15. Finishing an in-progress match succeeds and its data survives (FR-001, FR-002,
+            FR-007):
+              start Mexico Canada "Estadio Azteca"
+              ids
+              update <matchId> 2 1
+              finish <matchId>
+              get <matchId>
+            -> FINISHED, then get still shows Status=Finished, score 2-1 unchanged.
+
+        16. Finishing an already-finished match is rejected (FR-004):
+              finish <matchId>
+            -> REJECTED — no such in-progress match.
+
+        17. Finishing a nonexistent match Id is rejected (FR-004):
+              finish 9999
+            -> REJECTED.
+
+        18. A score update after finishing is rejected, final score never changes (FR-005):
+              update <matchId> 5 5
+            -> REJECTED; get <matchId> still shows 2-1.
+
+        19. A finished match's location and scheduledAt become reusable (FR-006):
+              start Germany France "Camp Nou" 2026-08-04T15:00:00Z
+              finish <thatMatchId>
+              start Uruguay Italy "Camp Nou" 2026-08-04T15:00:00Z
+            -> the second start SUCCEEDS — while Germany/France was in-progress this would
+               have been REJECTED (see scenario 5 above); finishing frees the slot.
         """);
 }

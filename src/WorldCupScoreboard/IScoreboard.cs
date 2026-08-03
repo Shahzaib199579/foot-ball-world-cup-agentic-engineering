@@ -7,4 +7,6 @@ public interface IScoreboard
     Match? GetMatch(int matchId);
 
     Match UpdateScore(int matchId, int homeScore, int awayScore);
+
+    Match FinishMatch(int matchId);
 }

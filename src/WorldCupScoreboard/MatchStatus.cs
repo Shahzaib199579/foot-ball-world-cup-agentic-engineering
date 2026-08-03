@@ -2,5 +2,6 @@ namespace WorldCupScoreboard;
 
 public enum MatchStatus
 {
-    InProgress
+    InProgress,
+    Finished
 }
