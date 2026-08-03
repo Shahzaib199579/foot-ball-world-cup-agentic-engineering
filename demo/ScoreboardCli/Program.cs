@@ -1,6 +1,7 @@
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using WorldCupScoreboard;
+using WorldCupScoreboard.Exceptions;
 using WorldCupScoreboard.Persistence;
 
 var dbContext = new ScoreboardDbContext(
@@ -39,6 +40,9 @@ while (true)
             break;
         case "get":
             HandleGet(commandArgs);
+            break;
+        case "update":
+            HandleUpdate(commandArgs);
             break;
         case "ids":
             HandleIds();
@@ -114,6 +118,30 @@ void HandleGet(List<string> args)
     PrintMatch(match, "FOUND");
 }
 
+void HandleUpdate(List<string> args)
+{
+    if (args.Count < 3 || !int.TryParse(args[0], out var matchId)
+        || !int.TryParse(args[1], out var homeScore) || !int.TryParse(args[2], out var awayScore))
+    {
+        Console.WriteLine("Usage: update <matchId> <homeScore> <awayScore>");
+        return;
+    }
+
+    try
+    {
+        var updated = scoreboard.UpdateScore(matchId, homeScore, awayScore);
+        PrintMatch(updated, "UPDATED");
+    }
+    catch (MatchNotFoundException ex)
+    {
+        Console.WriteLine($"REJECTED — {ex.Message}");
+    }
+    catch (InvalidScoreException ex)
+    {
+        Console.WriteLine($"REJECTED — {ex.Message}");
+    }
+}
+
 void HandleIds()
 {
     if (startedIds.Count == 0)
@@ -175,7 +203,7 @@ List<string> Tokenize(string line)
 void PrintWelcome()
 {
     Console.WriteLine("WorldCupScoreboard demo CLI");
-    Console.WriteLine("Covers: 001-start-match (start, get). Later specs add more commands here.");
+    Console.WriteLine("Covers: 001-start-match (start, get), 002-update-score (update). Later specs add more commands here.");
     Console.WriteLine("Type 'help' for commands and manual test scenarios, 'exit' to quit.");
     Console.WriteLine();
 }
@@ -187,6 +215,7 @@ void PrintHelp()
         Commands:
           start <home> <away> <location> [scheduledAt]   Start a new match. scheduledAt: ISO-8601 or 'now' (default).
           get <matchId>                                   Retrieve a match by its Id.
+          update <matchId> <homeScore> <awayScore>        Update a match's score (must not decrease).
           ids                                              List match Ids started this session.
           help                                             Show this help.
           exit | quit                                      Quit.
@@ -254,5 +283,30 @@ void PrintHelp()
         Note: the CLI can only ever pass an empty string, never a true null, for a missing
         argument — the null-argument branch of FR-002/FR-004 is covered by the automated
         tests (StartMatchValidationTests.cs), not manually here.
+
+        Manual test scenarios (spec 002-update-score):
+
+        11. A score update upward succeeds (FR-001, FR-006, FR-007):
+              start Mexico Canada "Estadio Azteca"
+              ids
+              update <matchId> 2 1
+            -> UPDATED, score 2-1; get <matchId> confirms it.
+
+        12. A decrease is rejected, score left unchanged (FR-003, FR-004):
+              update <matchId> 1 1
+            -> REJECTED (home score 1 is lower than current 2); get <matchId> still shows 2-1.
+
+        13. A negative score is rejected (FR-002):
+              update <matchId> 2 -1
+            -> REJECTED; score unchanged.
+
+        14. An update against a nonexistent match Id is rejected (FR-005):
+              update 9999 1 0
+            -> REJECTED — no such in-progress match.
+
+        Note: a malformed value (letters/special characters) can't be passed here either —
+        update's arguments are parsed as integers by this CLI itself (see HandleUpdate), so a
+        non-numeric argument fails Console-side parsing before ever reaching the library, same
+        rationale as spec 002-update-score's Assumptions section.
         """);
 }

@@ -54,8 +54,13 @@ Each row is its own Spec-Kit feature (`specs/<NNN-name>/`), built and merged seq
   - Team names non-null/non-empty.
   - A team cannot be in more than one in-progress match at a time.
   - Scores are non-negative integers, supplied as absolute values (not deltas), per the brief's
-    example. Not enforcing monotonic non-decrease — keeps the library simple, as the brief itself
-    frames these as open judgment calls.
+    example. Monotonic non-decrease IS enforced for `002-update-score`: a score update is
+    rejected if either team's new score is lower than its current recorded value (equal is
+    accepted; only an actual decrease is rejected), per explicit user instruction ("score can
+    only go up and never down") — supersedes this bullet's earlier "not enforcing" framing.
+  - A rejected score update (negative score, or a decrease) raises an error, consistent with the
+    next bullet's general throwing convention — not a non-throwing result like
+    `001-start-match`'s own specific `StartMatch`/`GetMatch` carve-out.
   - Operating on a non-existent or already-finished match throws.
 - **Concurrency**: coarse-grained internal locking for thread-safety, documented as "simple and
   correct, not optimized for throughput."

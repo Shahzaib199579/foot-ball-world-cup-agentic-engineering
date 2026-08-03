@@ -1,3 +1,4 @@
+using WorldCupScoreboard.Exceptions;
 using WorldCupScoreboard.Persistence;
 
 namespace WorldCupScoreboard;
@@ -72,6 +73,33 @@ public class Scoreboard : IScoreboard
         lock (_lock)
         {
             return _repository.GetById(matchId);
+        }
+    }
+
+    public Match UpdateScore(int matchId, int homeScore, int awayScore)
+    {
+        lock (_lock)
+        {
+            var match = _repository.GetById(matchId);
+            if (match is null || match.Status != MatchStatus.InProgress)
+            {
+                throw new MatchNotFoundException(matchId);
+            }
+
+            if (homeScore < 0 || homeScore < match.HomeTeam.Score)
+            {
+                throw new InvalidScoreException(match.HomeTeam.Name, homeScore, match.HomeTeam.Score);
+            }
+
+            if (awayScore < 0 || awayScore < match.AwayTeam.Score)
+            {
+                throw new InvalidScoreException(match.AwayTeam.Name, awayScore, match.AwayTeam.Score);
+            }
+
+            match.HomeTeam.Score = homeScore;
+            match.AwayTeam.Score = awayScore;
+            _repository.Update(match);
+            return match;
         }
     }
 }
