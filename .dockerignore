@@ -1,0 +1,16 @@
+**/bin/
+**/obj/
+tests/
+demo/
+specs/
+.git/
+.github/
+.specify/
+chat-history/
+chat-history.md
+*.db
+*.db-shm
+*.db-wal
+README.md
+AI.md
+CLAUDE.md
