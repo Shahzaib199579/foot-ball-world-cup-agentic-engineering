@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  scoreboard-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: scoreboard-api
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_URLS=http://+:5000
+      - ASPNETCORE_ENVIRONMENT=Development
+    restart: unless-stopped
+
+  scoreboard-frontend:
+    build:
+      context: ./src/WorldCupScoreboard.Frontend
+      dockerfile: Dockerfile
+    container_name: scoreboard-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - scoreboard-api
+    restart: unless-stopped
