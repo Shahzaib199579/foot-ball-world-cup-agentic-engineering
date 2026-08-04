@@ -100,8 +100,9 @@ import { CountryCardComponent } from '../../shared/components/country-card/count
                 class="start-btn"
                 [disabled]="startForm.invalid || startingMatch">
                 <mat-spinner *ngIf="startingMatch" diameter="20" class="btn-spinner"></mat-spinner>
-                <span *ngIf="!startingMatch">
-                  <mat-icon>play_arrow</mat-icon> Start Match
+                <span *ngIf="!startingMatch" class="btn-label">
+                  <mat-icon>play_arrow</mat-icon>
+                  <span>Start Match</span>
                 </span>
               </button>
             </div>
@@ -278,6 +279,12 @@ import { CountryCardComponent } from '../../shared/components/country-card/count
       padding: 8px 24px;
       border-radius: 8px;
       font-weight: 600;
+    }
+    .btn-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      line-height: 1;
     }
     .section-title {
       font-size: 1.3rem;

@@ -1,8 +1,3 @@
-# Chat history working area
-# Only a final, reviewed version gets committed on purpose (see CLAUDE.md).
-chat-history.md
-chat-history/
-
 # .NET
 bin/
 obj/

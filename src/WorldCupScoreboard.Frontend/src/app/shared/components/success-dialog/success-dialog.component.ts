@@ -29,7 +29,7 @@ export interface SuccessDialogData {
   `,
   styles: [`
     .success-dialog-container {
-      padding: 8px 4px;
+      padding: 0;
     }
     .success-dialog-header {
       display: flex;
@@ -42,9 +42,14 @@ export interface SuccessDialogData {
       font-size: 32px;
       width: 32px;
       height: 32px;
+      flex-shrink: 0;
     }
     .success-dialog-header h2 {
+      /* Angular Material's own .mdc-dialog__title bakes in a 24px left/right padding meant
+         for a title with no leading icon — reset it here so the flex gap above is the only
+         spacing between the icon and the title text, instead of the two stacking. */
       margin: 0;
+      padding: 0;
       font-size: 1.3rem;
       font-weight: 600;
       color: #0a369d;

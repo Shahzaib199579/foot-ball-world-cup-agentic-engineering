@@ -32,7 +32,8 @@ html, body {
   box-sizing: border-box;
 }
 
-.custom-error-dialog-panel .mat-mdc-dialog-container .mdc-dialog__surface {
+.custom-error-dialog-panel .mat-mdc-dialog-container .mdc-dialog__surface,
+.custom-success-dialog-panel .mat-mdc-dialog-container .mdc-dialog__surface {
   border-radius: 16px !important;
-  padding: 12px;
+  padding: 20px 24px;
 }
