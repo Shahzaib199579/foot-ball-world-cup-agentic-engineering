@@ -9,6 +9,8 @@ public class Match
     public string Location { get; internal set; }
     public MatchStatus Status { get; internal set; }
 
+    public int TotalScore => HomeTeam.Score + AwayTeam.Score;
+
     public Match(int id, Team homeTeam, Team awayTeam, DateTime scheduledAt, string location)
     {
         Id = id;

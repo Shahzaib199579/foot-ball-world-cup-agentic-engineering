@@ -118,4 +118,16 @@ public class Scoreboard : IScoreboard
             return match;
         }
     }
+
+    public IEnumerable<Match> GetSummary()
+    {
+        lock (_lock)
+        {
+            return _repository.GetAll()
+                .Where(m => m.Status == MatchStatus.InProgress)
+                .OrderByDescending(m => m.TotalScore)
+                .ThenByDescending(m => m.Id)
+                .ToList();
+        }
+    }
 }

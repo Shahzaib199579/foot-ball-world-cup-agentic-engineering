@@ -47,6 +47,9 @@ while (true)
         case "finish":
             HandleFinish(commandArgs);
             break;
+        case "summary":
+            HandleSummary();
+            break;
         case "ids":
             HandleIds();
             break;
@@ -164,6 +167,25 @@ void HandleFinish(List<string> args)
     }
 }
 
+void HandleSummary()
+{
+    var summary = scoreboard.GetSummary().ToList();
+
+    if (summary.Count == 0)
+    {
+        Console.WriteLine("No matches currently in progress.");
+        return;
+    }
+
+    Console.WriteLine("Live summary (total score descending, most-recently-started first on ties):");
+    foreach (var match in summary)
+    {
+        Console.WriteLine(
+            $"  {match.HomeTeam.Name} {match.HomeTeam.Score} - {match.AwayTeam.Score} " +
+            $"{match.AwayTeam.Name} (total {match.TotalScore}, Id={match.Id})");
+    }
+}
+
 void HandleIds()
 {
     if (startedIds.Count == 0)
@@ -225,7 +247,7 @@ List<string> Tokenize(string line)
 void PrintWelcome()
 {
     Console.WriteLine("WorldCupScoreboard demo CLI");
-    Console.WriteLine("Covers: 001-start-match (start, get), 002-update-score (update), 003-finish-match (finish). Later specs add more commands here.");
+    Console.WriteLine("Covers: 001-start-match (start, get), 002-update-score (update), 003-finish-match (finish), 004-live-summary (summary). Later specs add more commands here.");
     Console.WriteLine("Type 'help' for commands and manual test scenarios, 'exit' to quit.");
     Console.WriteLine();
 }
@@ -239,6 +261,7 @@ void PrintHelp()
           get <matchId>                                   Retrieve a match by its Id.
           update <matchId> <homeScore> <awayScore>        Update a match's score (must not decrease).
           finish <matchId>                                 Mark a match as finished (one-way, terminal).
+          summary                                          Show in-progress matches, ordered by total score desc.
           ids                                              List match Ids started this session.
           help                                             Show this help.
           exit | quit                                      Quit.
@@ -361,5 +384,27 @@ void PrintHelp()
               start Uruguay Italy "Camp Nou" 2026-08-04T15:00:00Z
             -> the second start SUCCEEDS — while Germany/France was in-progress this would
                have been REJECTED (see scenario 5 above); finishing frees the slot.
+
+        Manual test scenarios (spec 004-live-summary):
+
+        20. The brief's exact worked example (FR-002, FR-003, FR-006):
+              start Mexico Canada Venue1
+              start Spain Brazil Venue2
+              start Germany France Venue3
+              start Uruguay Italy Venue4
+              start Argentina Australia Venue5
+              ids
+              update <mexicoId> 0 5
+              update <spainId> 10 2
+              update <germanyId> 2 2
+              update <uruguayId> 6 6
+              update <argentinaId> 3 1
+              summary
+            -> order: Uruguay 6-6, Spain 10-2, Mexico 0-5, Argentina 3-1, Germany 2-2.
+
+        21. A finished match disappears from the summary (FR-001):
+              finish <germanyId>
+              summary
+            -> Germany/France no longer listed.
         """);
 }

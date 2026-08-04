@@ -34,7 +34,7 @@ Each row is its own Spec-Kit feature (`specs/<NNN-name>/`), built and merged seq
 | `specs/002-update-score` | Phase 1 (brief) | Update the score |
 | `specs/003-finish-match` | Phase 1 (brief) | Finish a match |
 | `specs/004-live-summary` | Phase 1 (brief) | Get summary of in-progress matches, ordering rule + the brief's worked example as an acceptance test |
-| `specs/005-match-history` | Phase 1 (brief) | The chosen extra feature (`GetHistory`) — must land in its own distinct commit per the brief |
+| `specs/005-match-history` | Phase 1 (brief) | The chosen extra feature (`GetHistory`) — returns ALL matches (in-progress and finished), paginated at 10 per page, most-recently created-or-updated first; must land in its own distinct commit per the brief |
 | `specs/006-scoreboard-api` | Phase 2 (beyond the brief) | REST API |
 | `specs/007-scoreboard-frontend` | Phase 3 (beyond the brief) | Angular/React client |
 
@@ -44,9 +44,14 @@ Each row is its own Spec-Kit feature (`specs/<NNN-name>/`), built and merged seq
   **.NET 9 (C#) + xUnit** instead. This MUST be called out explicitly and early in README.md as an
   intentional deviation, with rationale — not silently substituted.
 - **Extra operation**: `GetHistory()` — returns every match ever started (in-progress *and*
-  finished), each tagged with status, ordered by start order (most recent first). Rationale: fits a
-  "Data & Odds Platform" — historical results have standalone value beyond the live board. Document
-  this choice and rationale in README.md, and land it in its own commit.
+  finished), each tagged with status, **paginated at 10 entries per page**, ordered by most
+  recently **created or updated** first (superseded from an earlier "start order, most recent
+  first" framing — a score update or finish now also bumps a match to the front, not just its
+  start time). Rationale: fits a "Data & Odds Platform" — historical results have standalone
+  value beyond the live board, and pagination is what makes browsing that history practical.
+  Folds in the "see all matches, paginated" request that came in alongside `004-live-summary`
+  (explicitly scoped separately from that spec's live ordering — see that spec's Assumptions).
+  Document this choice and rationale in README.md, and land it in its own commit.
 - **Ordering/tie-break**: use a monotonic in-memory sequence counter for "start order," not
   `DateTime`/wall-clock — avoids tie-break ambiguity from timestamp resolution and keeps tests
   deterministic.

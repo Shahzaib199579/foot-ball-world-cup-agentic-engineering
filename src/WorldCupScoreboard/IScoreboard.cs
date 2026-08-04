@@ -9,4 +9,6 @@ public interface IScoreboard
     Match UpdateScore(int matchId, int homeScore, int awayScore);
 
     Match FinishMatch(int matchId);
+
+    IEnumerable<Match> GetSummary();
 }
