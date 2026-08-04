@@ -8,16 +8,23 @@ public class Scoreboard : IScoreboard
     private readonly object _lock = new();
     private readonly IMatchRepository _repository;
     private int _nextId;
+    private int _nextActivitySequence;
 
     public Scoreboard(IMatchRepository repository)
     {
         _repository = repository;
         _nextId = 1;
+        _nextActivitySequence = 1;
         foreach (var existing in _repository.GetAll())
         {
             if (existing.Id >= _nextId)
             {
                 _nextId = existing.Id + 1;
+            }
+
+            if (existing.ActivitySequence >= _nextActivitySequence)
+            {
+                _nextActivitySequence = existing.ActivitySequence + 1;
             }
         }
     }
@@ -61,9 +68,13 @@ public class Scoreboard : IScoreboard
                 }
             }
 
-            var match = new Match(_nextId, new Team(homeTeam), new Team(awayTeam), scheduledAt, location);
+            var match = new Match(_nextId, new Team(homeTeam), new Team(awayTeam), scheduledAt, location)
+            {
+                ActivitySequence = _nextActivitySequence
+            };
             _repository.Add(match);
             _nextId++;
+            _nextActivitySequence++;
             return match;
         }
     }
@@ -98,6 +109,8 @@ public class Scoreboard : IScoreboard
 
             match.HomeTeam.Score = homeScore;
             match.AwayTeam.Score = awayScore;
+            match.ActivitySequence = _nextActivitySequence;
+            _nextActivitySequence++;
             _repository.Update(match);
             return match;
         }
@@ -114,6 +127,8 @@ public class Scoreboard : IScoreboard
             }
 
             match.Status = MatchStatus.Finished;
+            match.ActivitySequence = _nextActivitySequence;
+            _nextActivitySequence++;
             _repository.Update(match);
             return match;
         }
@@ -127,6 +142,23 @@ public class Scoreboard : IScoreboard
                 .Where(m => m.Status == MatchStatus.InProgress)
                 .OrderByDescending(m => m.TotalScore)
                 .ThenByDescending(m => m.Id)
+                .ToList();
+        }
+    }
+
+    public IEnumerable<Match> GetHistory(int page)
+    {
+        if (page < 1)
+        {
+            throw new InvalidPageException(page);
+        }
+
+        lock (_lock)
+        {
+            return _repository.GetAll()
+                .OrderByDescending(m => m.ActivitySequence)
+                .Skip((page - 1) * 10)
+                .Take(10)
                 .ToList();
         }
     }

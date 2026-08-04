@@ -17,6 +17,7 @@ public class ScoreboardDbContext : DbContext
         {
             match.HasKey(m => m.Id);
             match.Property(m => m.Id).ValueGeneratedNever();
+            match.Property(m => m.ActivitySequence).ValueGeneratedNever();
 
             match.OwnsOne(m => m.HomeTeam, home =>
             {

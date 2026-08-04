@@ -11,4 +11,6 @@ public interface IScoreboard
     Match FinishMatch(int matchId);
 
     IEnumerable<Match> GetSummary();
+
+    IEnumerable<Match> GetHistory(int page);
 }

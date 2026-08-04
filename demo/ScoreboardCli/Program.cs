@@ -50,6 +50,9 @@ while (true)
         case "summary":
             HandleSummary();
             break;
+        case "history":
+            HandleHistory(commandArgs);
+            break;
         case "ids":
             HandleIds();
             break;
@@ -186,6 +189,38 @@ void HandleSummary()
     }
 }
 
+void HandleHistory(List<string> args)
+{
+    if (args.Count < 1 || !int.TryParse(args[0], out var page))
+    {
+        Console.WriteLine("Usage: history <page>");
+        return;
+    }
+
+    try
+    {
+        var history = scoreboard.GetHistory(page).ToList();
+
+        if (history.Count == 0)
+        {
+            Console.WriteLine($"No matches on page {page}.");
+            return;
+        }
+
+        Console.WriteLine($"History page {page} (most recently created/updated/finished first):");
+        foreach (var match in history)
+        {
+            Console.WriteLine(
+                $"  Id={match.Id} | {match.HomeTeam.Name} {match.HomeTeam.Score}-{match.AwayTeam.Score} " +
+                $"{match.AwayTeam.Name} | Status={match.Status}");
+        }
+    }
+    catch (InvalidPageException ex)
+    {
+        Console.WriteLine($"REJECTED — {ex.Message}");
+    }
+}
+
 void HandleIds()
 {
     if (startedIds.Count == 0)
@@ -247,7 +282,7 @@ List<string> Tokenize(string line)
 void PrintWelcome()
 {
     Console.WriteLine("WorldCupScoreboard demo CLI");
-    Console.WriteLine("Covers: 001-start-match (start, get), 002-update-score (update), 003-finish-match (finish), 004-live-summary (summary). Later specs add more commands here.");
+    Console.WriteLine("Covers: 001-start-match (start, get), 002-update-score (update), 003-finish-match (finish), 004-live-summary (summary), 005-match-history (history). This is the brief's full set plus the chosen extra feature.");
     Console.WriteLine("Type 'help' for commands and manual test scenarios, 'exit' to quit.");
     Console.WriteLine();
 }
@@ -262,6 +297,7 @@ void PrintHelp()
           update <matchId> <homeScore> <awayScore>        Update a match's score (must not decrease).
           finish <matchId>                                 Mark a match as finished (one-way, terminal).
           summary                                          Show in-progress matches, ordered by total score desc.
+          history <page>                                   Show all matches (10/page), most recently active first.
           ids                                              List match Ids started this session.
           help                                             Show this help.
           exit | quit                                      Quit.
@@ -406,5 +442,27 @@ void PrintHelp()
               finish <germanyId>
               summary
             -> Germany/France no longer listed.
+
+        Manual test scenarios (spec 005-match-history, the brief's chosen extra feature):
+
+        22. History includes both in-progress and finished matches, most recent activity
+            first (FR-001, FR-002, FR-007):
+              history 1
+            -> shows all matches started above (Mexico, Spain, Germany, Uruguay, Argentina,
+               Denmark, Sweden, ...), Germany included even though it was finished.
+
+        23. A score update or finish re-ranks a match ahead of newer ones (FR-002):
+              update <mexicoId> 1 5
+              history 1
+            -> Mexico's match now appears first (most recently active), even though it was
+               started before the others.
+
+        24. Pages beyond the available data return no error (FR-004):
+              history 100
+            -> "No matches on page 100." — not a rejection.
+
+        25. An invalid page number is rejected (FR-005):
+              history 0
+            -> REJECTED.
         """);
 }

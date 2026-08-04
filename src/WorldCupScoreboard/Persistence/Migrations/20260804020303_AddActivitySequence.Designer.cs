@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WorldCupScoreboard.Persistence;
 
@@ -10,9 +11,11 @@ using WorldCupScoreboard.Persistence;
 namespace WorldCupScoreboard.Persistence.Migrations
 {
     [DbContext(typeof(ScoreboardDbContext))]
-    partial class ScoreboardDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260804020303_AddActivitySequence")]
+    partial class AddActivitySequence
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.10");
